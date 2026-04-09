@@ -6,61 +6,65 @@
 
 # 
 
-# \---
-
-# 
-
 # \## Tech Stack
 
-# \- Java 17  
+# \- Java 17
 
-# \- Spring Boot 3.x  
+# \- Spring Boot
 
-# \- MySQL 8.0  
+# \- MySQL
 
-# \- Selenium WebDriver  
+# \- Selenium WebDriver
 
-# \- REST-Assured  
+# \- REST-Assured
 
-# \- Maven  
-
-# 
-
-# \---
+# \- Maven
 
 # 
 
 # \## Features
 
-# \- Web UI testing using Selenium  
+# \- Web UI testing using Selenium
 
-# \- API testing using REST-Assured  
+# \- API testing using REST-Assured
 
-# \- Parallel test execution (multithreading)  
+# \- Parallel test execution
 
-# \- Automated scheduling  
+# \- Automated scheduling
 
-# \- HTML, CSV, and JUnit report generation  
+# \- HTML, CSV, JUnit reports
 
-# \- Failure logs with screenshots  
+# \- Failure logs with screenshots
 
-# \- Result analytics and pass rate tracking  
+# \- Analytics and pass rate tracking
 
-# \- REST API-based execution  
-
-# 
-
-# \---
+# \- REST API support
 
 # 
 
 # \## How to Run
 
-# 1\. Ensure MySQL is running and `regression\_db` is created  
+# 1\. Ensure MySQL is running with `regression\_db`
 
-# 2\. Build the project:
-
-# &#x20;  ```bash
+# 2\. Build project:
 
 # &#x20;  mvn clean package
+
+# 3\. Run:
+
+# &#x20;  java -jar target/regression-framework-0.0.1-SNAPSHOT.jar
+
+# 
+
+# \## API Endpoints
+
+# \- POST /tests/integrate
+
+# \- POST /tests/execute
+
+# \- GET /analytics/summary
+
+# \- GET /reports/generate/html
+
+# \- POST /schedule/run
 
