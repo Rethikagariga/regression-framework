@@ -2,39 +2,63 @@
 
 # 
 
+# A complete regression test automation framework built with Java and Spring Boot.
+
+# 
+
 # \## Tech Stack
 
-# \- Java
+# \- Java 17
 
-# \- Spring Boot
+# \- Spring Boot 3.x
 
-# \- Selenium
+# \- MySQL 8.0
 
-# \- REST-Assured
+# \- Selenium WebDriver 4.18
 
-# \- MySQL
+# \- REST-Assured 5.4
+
+# \- Maven
 
 # 
 
 # \## Features
 
-# \- Automated test execution
+# \- Web UI testing using Selenium
 
-# \- Parallel execution
+# \- API testing using REST-Assured
 
-# \- API \& UI testing
+# \- Parallel test execution with multithreading
 
-# \- Reporting (HTML, CSV, JUnit)
+# \- Automated scheduling every 60 minutes
 
-# \- Analytics (pass rate, trends)
+# \- HTML, CSV, JUnit report generation
+
+# \- Failure log collection with screenshots
+
+# \- Result analytics and pass rate tracking
+
+# \- REST API for all operations
 
 # 
 
 # \## How to Run
 
-# 1\. Configure MySQL
+# 1\. Make sure MySQL is running with regression\_db database
 
-# 2\. Run application:
+# 2\. Run: java -jar target/regression-framework-0.0.1-SNAPSHOT.jar
 
-# &#x20;  java -jar target/\*.jar
+# 
+
+# \## API Endpoints
+
+# \- POST /tests/integrate - Create test case
+
+# \- POST /tests/execute - Execute a test
+
+# \- GET /analytics/summary - View analytics
+
+# \- GET /reports/generate/html - Generate report
+
+# \- POST /schedule/run - Run all tests in parallel
 
