@@ -2,63 +2,65 @@
 
 # 
 
-# A complete regression test automation framework built with Java and Spring Boot.
+# A complete regression test automation framework built using Java and Spring Boot.
+
+# 
+
+# \---
 
 # 
 
 # \## Tech Stack
 
-# \- Java 17
+# \- Java 17  
 
-# \- Spring Boot 3.x
+# \- Spring Boot 3.x  
 
-# \- MySQL 8.0
+# \- MySQL 8.0  
 
-# \- Selenium WebDriver 4.18
+# \- Selenium WebDriver  
 
-# \- REST-Assured 5.4
+# \- REST-Assured  
 
-# \- Maven
+# \- Maven  
+
+# 
+
+# \---
 
 # 
 
 # \## Features
 
-# \- Web UI testing using Selenium
+# \- Web UI testing using Selenium  
 
-# \- API testing using REST-Assured
+# \- API testing using REST-Assured  
 
-# \- Parallel test execution with multithreading
+# \- Parallel test execution (multithreading)  
 
-# \- Automated scheduling every 60 minutes
+# \- Automated scheduling  
 
-# \- HTML, CSV, JUnit report generation
+# \- HTML, CSV, and JUnit report generation  
 
-# \- Failure log collection with screenshots
+# \- Failure logs with screenshots  
 
-# \- Result analytics and pass rate tracking
+# \- Result analytics and pass rate tracking  
 
-# \- REST API for all operations
+# \- REST API-based execution  
+
+# 
+
+# \---
 
 # 
 
 # \## How to Run
 
-# 1\. Make sure MySQL is running with regression\_db database
+# 1\. Ensure MySQL is running and `regression\_db` is created  
 
-# 2\. Run: java -jar target/regression-framework-0.0.1-SNAPSHOT.jar
+# 2\. Build the project:
 
-# 
+# &#x20;  ```bash
 
-# \## API Endpoints
-
-# \- POST /tests/integrate - Create test case
-
-# \- POST /tests/execute - Execute a test
-
-# \- GET /analytics/summary - View analytics
-
-# \- GET /reports/generate/html - Generate report
-
-# \- POST /schedule/run - Run all tests in parallel
+# &#x20;  mvn clean package
 
