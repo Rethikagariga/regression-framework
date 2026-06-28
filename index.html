@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>regression-engine — control panel</title>
+<style>
+  :root{
+    --bg:#0B1120;
+    --surface:#101A2E;
+    --surface-2:#0E1626;
+    --border:#1E293F;
+    --text:#E8EDF7;
+    --muted:#7C879C;
+    --accent:#3DA9FC;
+    --pass:#34D399;
+    --fail:#FB7185;
+    --warn:#FBBF24;
+    --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);}
+  body{padding:0 0 60px;min-height:100vh;}
+
+  .consolebar{
+    display:flex;align-items:center;gap:14px;
+    padding:14px 22px;background:var(--surface-2);
+    border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:10;flex-wrap:wrap;
+  }
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--pass);box-shadow:0 0 0 0 rgba(52,211,153,.6);
+    animation:pulse 2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55);}70%{box-shadow:0 0 0 7px rgba(52,211,153,0);}100%{box-shadow:0 0 0 0 rgba(52,211,153,0);}}
+  .consoletitle{font-family:var(--mono);font-size:13px;color:var(--text);white-space:nowrap;}
+  .consoletitle b{color:var(--accent);}
+  .baseurl-wrap{display:flex;align-items:center;gap:8px;margin-left:auto;}
+  .baseurl-wrap label{font-size:11px;color:var(--muted);font-family:var(--mono);}
+  #baseUrl{
+    background:var(--bg);border:1px solid var(--border);color:var(--text);
+    font-family:var(--mono);font-size:12px;padding:6px 10px;border-radius:6px;width:230px;
+  }
+  #baseUrl:focus{outline:1px solid var(--accent);}
+  .pingbtn{
+    background:transparent;border:1px solid var(--border);color:var(--muted);
+    font-family:var(--mono);font-size:11px;padding:6px 10px;border-radius:6px;cursor:pointer;
+  }
+  .pingbtn:hover{border-color:var(--accent);color:var(--accent);}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 22px 0;}
+
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:26px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 16px 14px;}
+  .stat .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:var(--sans);}
+  .stat .value{font-family:var(--mono);font-size:26px;margin-top:6px;color:var(--text);}
+  .stat.pass .value{color:var(--pass);}
+  .stat.fail .value{color:var(--fail);}
+  .stat.warn .value{color:var(--warn);}
+
+  .grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:start;}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:18px;overflow:hidden;}
+  .card h2{
+    font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    margin:0;padding:13px 16px;border-bottom:1px solid var(--border);
+    font-family:var(--sans);font-weight:600;display:flex;justify-content:space-between;align-items:center;
+  }
+  .card .body{padding:16px;}
+
+  .form-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+  .form-row input, .form-row select{
+    flex:1;min-width:120px;background:var(--bg);border:1px solid var(--border);color:var(--text);
+    font-family:var(--sans);font-size:13px;padding:8px 10px;border-radius:6px;
+  }
+  .form-row input:focus, .form-row select:focus{outline:1px solid var(--accent);}
+  .btn{
+    background:var(--accent);color:#06141F;border:none;font-weight:600;
+    font-family:var(--sans);font-size:13px;padding:9px 16px;border-radius:6px;cursor:pointer;white-space:nowrap;
+  }
+  .btn:hover{filter:brightness(1.08);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
+  .btn.ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn.sm{padding:5px 10px;font-size:12px;}
+  .btn.danger{background:transparent;border:1px solid var(--fail);color:var(--fail);}
+  .btn.danger:hover{background:rgba(251,113,133,.12);}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{
+    text-align:left;font-family:var(--mono);font-size:11px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.04em;padding:8px 10px;border-bottom:1px solid var(--border);
+  }
+  td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .tname{font-weight:600;}
+  .turl{color:var(--muted);font-family:var(--mono);font-size:11px;display:block;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tag{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid var(--border);color:var(--muted);}
+  .tag.web{color:#A78BFA;border-color:#A78BFA44;}
+  .tag.api{color:var(--accent);border-color:#3DA9FC44;}
+  .rowbtns{display:flex;gap:6px;}
+
+  .ltag{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.02em;}
+  .ltag.PASS{color:var(--pass);background:rgba(52,211,153,.12);}
+  .ltag.FAIL{color:var(--fail);background:rgba(251,113,133,.12);}
+  .ltag.ERROR{color:var(--warn);background:rgba(251,191,36,.12);}
+
+  .feed{max-height:260px;overflow-y:auto;}
+  .feedrow{
+    display:flex;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--border);
+    font-family:var(--mono);font-size:12px;
+  }
+  .feedrow:last-child{border-bottom:none;}
+  .feedtime{color:var(--muted);min-width:64px;}
+  .feedname{color:var(--text);flex:1;}
+  .feedms{color:var(--muted);}
+
+  .empty{color:var(--muted);font-size:13px;font-style:italic;padding:6px 0;}
+
+  .actionsgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .statusline{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+  .statusline b{color:var(--text);}
+
+  .failrow{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border);}
+  .failrow:last-child{border-bottom:none;}
+  .failcount{font-family:var(--mono);color:var(--fail);font-weight:700;}
+
+  .toast{
+    position:fixed;bottom:18px;right:18px;background:var(--surface-2);border:1px solid var(--border);
+    color:var(--text);padding:11px 16px;border-radius:8px;font-size:13px;font-family:var(--sans);
+    box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:50;max-width:340px;opacity:0;transform:translateY(8px);
+    transition:opacity .2s,transform .2s;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast.err{border-color:var(--fail);color:var(--fail);}
+  .toast.ok{border-color:var(--pass);color:var(--pass);}
+
+  @media (max-width:860px){
+    .grid{grid-template-columns:1fr;}
+    .stats{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+
+  <div class="consolebar">
+    <span class="dot"></span>
+    <span class="consoletitle"><b>regression-engine</b> — control panel</span>
+    <div class="baseurl-wrap">
+      <label for="baseUrl">target</label>
+      <input id="baseUrl" value="http://localhost:8081" spellcheck="false">
+      <button class="pingbtn" onclick="refreshAll()">refresh</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <div class="stats" id="statsStrip">
+      <div class="stat"><div class="label">Total Runs</div><div class="value" id="statTotal">—</div></div>
+      <div class="stat pass"><div class="label">Passed</div><div class="value" id="statPass">—</div></div>
+      <div class="stat fail"><div class="label">Failed</div><div class="value" id="statFail">—</div></div>
+      <div class="stat warn"><div class="label">Pass Rate</div><div class="value" id="statRate">—</div></div>
+      <div class="stat"><div class="label">Avg Time</div><div class="value" id="statAvg">—</div></div>
+    </div>
+
+    <div class="grid">
+
+      <div>
+
+        <div class="card">
+          <h2>New Test Case</h2>
+          <div class="body">
+            <div class="form-row">
+              <input id="ntName" placeholder="Test name">
+              <select id="ntType">
+                <option value="WEB">WEB</option>
+                <option value="API">API</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <input id="ntUrl" placeholder="Target URL — https://...">
+            </div>
+            <div class="form-row">
+              <input id="ntDesc" placeholder="Description (optional)">
+              <button class="btn" onclick="createTest()">+ Create</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Test Cases <span id="testCount" style="color:var(--muted);font-weight:400;"></span></h2>
+          <div class="body">
+            <table id="testTable">
+              <thead><tr><th>Name</th><th>Type</th><th>Target</th><th>Status</th><th></th></tr></thead>
+              <tbody id="testTbody"><tr><td colspan="5"><div class="empty">No test cases yet — create one above.</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Recent Executions</h2>
+          <div class="body">
+            <div class="feed" id="resultsFeed"><div class="empty">No executions yet.</div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div>
+
+        <div class="card">
+          <h2>Scheduler</h2>
+          <div class="body">
+            <button class="btn" style="width:100%;" onclick="runAll()">▶ Run All Active Tests (parallel)</button>
+            <div class="statusline" id="schedStatus">status: <b>unknown</b></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Reports & Logs</h2>
+          <div class="body">
+            <div class="actionsgrid">
+              <button class="btn ghost sm" onclick="genReport('html')">HTML report</button>
+              <button class="btn ghost sm" onclick="genReport('csv')">CSV report</button>
+              <button class="btn ghost sm" onclick="genReport('junit')">JUnit XML</button>
+              <button class="btn ghost sm" onclick="collectLogs()">Collect logs</button>
+            </div>
+            <div class="statusline" id="reportStatus">no report generated yet</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Most Failing Tests</h2>
+          <div class="body" id="failingBody">
+            <div class="empty">No failures recorded.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+let testCases = [];
+
+function base(){ return document.getElementById('baseUrl').value.replace(/\/$/,''); }
+function toast(msg, kind){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (kind ? ' '+kind : '');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>{ t.className = 'toast'; }, 3200);
+}
+async function api(path, opts){
+  const res = await fetch(base() + path, Object.assign({headers:{'Content-Type':'application/json'}}, opts||{}));
+  if(!res.ok){ throw new Error(path + ' \u2192 HTTP ' + res.status); }
+  const text = await res.text();
+  try{ return JSON.parse(text); }catch(e){ return text; }
+}
+
+async function loadTests(){
+  try{
+    testCases = await api('/tests');
+    const tbody = document.getElementById('testTbody');
+    document.getElementById('testCount').textContent = testCases.length ? ('('+testCases.length+')') : '';
+    if(!testCases.length){
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty">No test cases yet — create one above.</div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = testCases.map(t => `
+      <tr>
+        <td class="tname">${esc(t.name)}</td>
+        <td><span class="tag ${t.type==='WEB'?'web':'api'}">${t.type}</span></td>
+        <td><span class="turl">${esc(t.targetUrl||'')}</span></td>
+        <td style="color:var(--muted);font-size:12px;">${t.status||''}</td>
+        <td>
+          <div class="rowbtns">
+            <button class="btn sm" onclick="execTest(${t.id})">Run</button>
+            <button class="btn sm danger" onclick="deleteTest(${t.id})">Del</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }catch(e){ toast('Could not load tests \u2014 ' + e.message, 'err'); }
+}
+
+async function createTest(){
+  const name = document.getElementById('ntName').value.trim();
+  const url = document.getElementById('ntUrl').value.trim();
+  const type = document.getElementById('ntType').value;
+  const desc = document.getElementById('ntDesc').value.trim();
+  if(!name || !url){ toast('Name and target URL are required', 'err'); return; }
+  try{
+    await api('/tests/integrate', { method:'POST', body: JSON.stringify({
+      name, type, description: desc, status:'ACTIVE', targetUrl: url
+    })});
+    document.getElementById('ntName').value='';
+    document.getElementById('ntUrl').value='';
+    document.getElementById('ntDesc').value='';
+    toast('Test case created', 'ok');
+    loadTests();
+  }catch(e){ toast('Create failed \u2014 ' + e.message, 'err'); }
+}
+
+async function deleteTest(id){
+  try{
+    await api('/tests/'+id, { method:'DELETE' });
+    toast('Test case deleted', 'ok');
+    loadTests();
+  }catch(e){ toast('Delete failed \u2014 ' + e.message, 'err'); }
+}
+
+async function execTest(id){
+  toast('Executing test #' + id + ' \u2026');
+  try{
+    const result = await api('/tests/execute', { method:'POST', body: JSON.stringify({ testCaseId:id }) });
+    toast('Test #' + id + ' \u2192 ' + result.result, result.result === 'PASS' ? 'ok' : 'err');
+    loadResults();
+    loadStats();
+  }catch(e){ toast('Execution failed \u2014 ' + e.message, 'err'); }
+}
+
+async function loadResults(){
+  try{
+    const results = await api('/tests/results/all');
+    const feed = document.getElementById('resultsFeed');
+    if(!results.length){ feed.innerHTML = '<div class="empty">No executions yet.</div>'; return; }
+    const sorted = results.slice().sort((a,b)=> new Date(b.executedAt) - new Date(a.executedAt)).slice(0,12);
+    feed.innerHTML = sorted.map(r => {
+      const name = r.testCase ? r.testCase.name : ('#'+r.id);
+      const time = r.executedAt ? r.executedAt.substring(11,19) : '--:--:--';
+      return `<div class="feedrow">
+        <span class="feedtime">${time}</span>
+        <span class="ltag ${r.result}">${r.result}</span>
+        <span class="feedname">${esc(name)}</span>
+        <span class="feedms">${r.executionTimeMs ?? '-'}ms</span>
+      </div>`;
+    }).join('');
+  }catch(e){ /* silent on dashboard load */ }
+}
+
+async function loadStats(){
+  try{
+    const stats = await api('/analytics/stats');
+    document.getElementById('statTotal').textContent = stats.total ?? '0';
+    document.getElementById('statPass').textContent = stats.pass ?? '0';
+    document.getElementById('statFail').textContent = stats.fail ?? '0';
+  }catch(e){}
+  try{
+    const rate = await api('/analytics/passrate');
+    document.getElementById('statRate').textContent = rate.passRate ?? '\u2014';
+  }catch(e){}
+  try{
+    const avg = await api('/analytics/avgtime');
+    document.getElementById('statAvg').textContent = avg.averageExecutionTimeMs ?? '\u2014';
+  }catch(e){}
+  try{
+    const failing = await api('/analytics/failing');
+    const box = document.getElementById('failingBody');
+    if(!failing.length){ box.innerHTML = '<div class="empty">No failures recorded.</div>'; }
+    else{
+      box.innerHTML = failing.slice(0,6).map(f => `
+        <div class="failrow"><span>${esc(f.testName)}</span><span class="failcount">${f.failCount}</span></div>
+      `).join('');
+    }
+  }catch(e){}
+}
+
+async function runAll(){
+  toast('Triggering parallel run \u2026');
+  try{
+    const msg = await api('/schedule/run', { method:'POST' });
+    document.getElementById('schedStatus').innerHTML = 'status: <b>' + esc(msg) + '</b>';
+    toast(msg, 'ok');
+    setTimeout(()=>{ loadResults(); loadStats(); }, 2500);
+  }catch(e){ toast('Scheduler trigger failed \u2014 ' + e.message, 'err'); }
+}
+async function loadSchedStatus(){
+  try{
+    const msg = await api('/schedule/status');
+    document.getElementById('schedStatus').innerHTML = 'status: <b>' + esc(msg) + '</b>';
+  }catch(e){}
+}
+
+async function genReport(kind){
+  toast('Generating ' + kind.toUpperCase() + ' report \u2026');
+  try{
+    const msg = await api('/reports/generate/' + kind);
+    document.getElementById('reportStatus').textContent = msg;
+    toast('Report generated', 'ok');
+  }catch(e){ toast('Report failed \u2014 ' + e.message, 'err'); }
+}
+async function collectLogs(){
+  toast('Collecting failure logs \u2026');
+  try{
+    const msg = await api('/reports/logs/collect', { method:'POST' });
+    document.getElementById('reportStatus').textContent = msg;
+    toast('Logs collected', 'ok');
+  }catch(e){ toast('Log collection failed \u2014 ' + e.message, 'err'); }
+}
+
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function refreshAll(){
+  loadTests(); loadResults(); loadStats(); loadSchedStatus();
+}
+refreshAll();
+setInterval(refreshAll, 15000);
+</script>
+</body>
+</html>
